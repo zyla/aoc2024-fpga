@@ -1,0 +1,6 @@
+./uart/rtl/impl_top.v
+./uart/rtl/uart_tx.v
+./uart/rtl/uart_rx.v
+./uart/test/tb.v
+./uart/test/tb_rx.v
+./uart/test/tb_tx.v
