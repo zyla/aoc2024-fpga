@@ -1,3 +1,5 @@
+/* verilator lint_off UNUSEDSIGNAL */
+
 module puzzle (
     input clk,
     input rst,
@@ -14,10 +16,12 @@ module puzzle (
     if (rst) begin
       // reset
     end else begin
-      if (input_valid && !output_busy) begin
-        output_en <= 1;
-        output_data <= input_data >= "a" && input_data <= "z" ? input_data - 32 : input_data;
-      end
+     if (input_valid && !output_busy) begin
+       output_en <= 1;
+       output_data <= input_data >= "a" && input_data <= "z" ? input_data - 32 : input_data;
+     end else begin
+       output_en <= 0;
+     end
     end
   end
 

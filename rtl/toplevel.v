@@ -8,7 +8,7 @@ output  wire        uart_txd  // UART transmit pin.
 );
 
 // Clock frequency in hertz.
-parameter CLK_HZ = 50000000;
+parameter CLK_HZ = 12000000;
 parameter BIT_RATE =   9600;
 parameter PAYLOAD_BITS = 8;
 
