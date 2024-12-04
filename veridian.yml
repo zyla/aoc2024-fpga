@@ -1,0 +1,30 @@
+# list of directories to recursively search for SystemVerilog/Verilog sources
+source_dirs:
+  - uart/rtl
+  - .
+# if true, recursively search the working directory for files to run diagnostics on
+# default: true
+auto_search_workdir: true,
+# verible tool configuration
+verible:
+  # verible-verilog-syntax configuration
+  syntax:
+    # default: true if in path
+    enabled: true,
+    path: "verible-verilog-syntax"
+  # verible-verilog-format configuration
+  format:
+    # default: true if in path
+    enabled: true,
+    path: "verible-verilog-format"
+verilator:
+  # verilator configuration
+  syntax:
+    # default: true if in path
+    enabled: true,
+    path: "verilator"
+    # default: specified below
+    args:
+      - --lint-only
+      - --sv
+      - -Wall
