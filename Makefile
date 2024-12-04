@@ -26,15 +26,15 @@ waveform.vcd: ./obj_dir/V$(MODULE)
 	@echo "### BUILDING SIM ###"
 	make -j -C obj_dir -f V$(MODULE).mk V$(MODULE)
 
-.stamp.verilate: $(MODULE).v tb.cpp
+.stamp.verilate: rtl/*.v tb.cpp
 	@echo
 	@echo "### VERILATING ###"
-	verilator -Wall --trace --x-assign unique --x-initial unique -cc $(MODULE).v --exe tb.cpp
+	verilator -Wall --trace --x-assign unique --x-initial unique -cc rtl/$(MODULE).v --exe tb.cpp
 	@touch .stamp.verilate
 
 .PHONY:lint
-lint: $(MODULE).v
-	verilator --lint-only $(MODULE).v
+lint: rtl/*.v
+	verilator --lint-only -Wall rtl/*.v
 
 .PHONY: clean
 clean:

@@ -3,7 +3,7 @@ module puzzle (
     input rst,
 
     input wire       input_valid,  // Valid data recieved and available.
-    input reg  [7:0] input_data,   // The recieved data.
+    input wire  [7:0] input_data,   // The recieved data.
 
     input  wire       output_busy,  // Module busy sending previous item.
     output reg       output_en,    // Send the data on output_data
