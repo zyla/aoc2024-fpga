@@ -7,8 +7,9 @@ input   wire        uart_rxd, // UART Recieve pin.
 output  wire        uart_txd  // UART transmit pin.
 );
 
+
 // Clock frequency in hertz.
-parameter CLK_HZ = 12000000;
+parameter CLK_HZ = 2000000;
 parameter BIT_RATE =   9600;
 parameter PAYLOAD_BITS = 8;
 
@@ -22,11 +23,27 @@ wire        uart_tx_en;
 
 wire rst;
 
-// ------------------------------------------------------------------------- 
+reg [31:0] counter;
+
+reg [7:0] data;
 
 assign rst = !sw_0;
 
+always @(posedge clk) begin
+  if(counter == CLK_HZ)
+    counter <= 0;
+  else
+    counter <= counter + 1;
+  
+  if(uart_rx_valid)
+    data <= uart_rx_data;
+end
 
+// Loopback
+assign uart_tx_en = counter == 0;
+assign uart_tx_data = data;
+
+/*
 puzzle puzzle_ (
   .rst (rst),
   .clk (clk),
@@ -36,6 +53,7 @@ puzzle puzzle_ (
   .input_data (uart_rx_data),
   .input_valid (uart_rx_valid)
 );
+*/
 
 // ------------------------------------------------------------------------- 
 
