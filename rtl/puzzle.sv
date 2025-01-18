@@ -24,7 +24,7 @@ module puzzle
 
   reg [W_BCD-1:0] value_bcd = 0;
 
-  logic [W-1:0] computation_result = value_1 + value;
+  logic [W-1:0] computation_result = value_1 * value;
 
   wire [W_BCD-1:0] value_bcd_computed;
   bin2bcd #(
