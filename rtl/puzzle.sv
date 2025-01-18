@@ -14,7 +14,7 @@ module puzzle
     output logic [7:0] output_data   // The data to be sent
 );
 
-  enum { INITIAL, SENDING } state;
+  enum { INITIAL, SENDING, NEWLINE } state;
 
   reg [W-1:0] value = 0;
   reg [3:0] n_to_send = 0;
@@ -42,6 +42,7 @@ module puzzle
           if (input_valid) begin
             if(input_data == "\n") begin
               n_to_send <= 4'(W_BCD/4);
+              value <= 0;
               value_bcd <= value_bcd_computed;
               state <= SENDING;
             end else if (input_data >= "0" && input_data <= "9") begin
@@ -57,8 +58,13 @@ module puzzle
               n_to_send <= n_to_send - 1;
               value_bcd <= value_bcd << 4;
             end else begin
-              state <= INITIAL;
+              state <= NEWLINE;
             end
+          end
+        end
+        NEWLINE: begin
+          if(!output_busy) begin
+            state <= INITIAL;
           end
         end
       endcase
@@ -73,6 +79,10 @@ module puzzle
       SENDING: begin
         output_en = n_to_send > 0;
         output_data = 8'(value_bcd[W_BCD-1:W_BCD-4]) + "0";
+      end
+      NEWLINE: begin
+        output_en = 1;
+        output_data = "\n";
       end
     endcase
   end
