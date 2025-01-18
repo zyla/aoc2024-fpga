@@ -28,16 +28,21 @@ module puzzle (
       case(state)
         INITIAL: begin
           if (input_valid) begin
-            value <= 'hdead1234;
-            n_to_send <= 8;
-            state <= SENDING;
+            if(input_data == "\n") begin
+              n_to_send <= 8;
+              state <= SENDING;
+            end else if (input_data >= "0" && input_data <= "9") begin
+              value <= (value << 3) + (value << 1) + input_data - "0";
+            end else begin
+              // TODO: print error
+            end
           end
         end
         SENDING: begin
           if(!output_busy) begin
             if(n_to_send > 0) begin
               n_to_send <= n_to_send - 1;
-              value <= {value[27:0], 4'b0};
+              value <= value << 4;
             end else begin
               state <= INITIAL;
             end
