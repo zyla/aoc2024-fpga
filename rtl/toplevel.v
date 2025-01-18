@@ -3,14 +3,15 @@
 module toplevel (
 input               clk     , // Top level system clock input.
 input               sw_0    , // Button - for reset
+output wire led_0,
 input   wire        uart_rxd, // UART Recieve pin.
 output  wire        uart_txd  // UART transmit pin.
 );
 
 
 // Clock frequency in hertz.
-parameter CLK_HZ = 2000000;
-parameter BIT_RATE =   9600;
+parameter CLK_HZ = 12000000;
+parameter BIT_RATE =   115200;
 parameter PAYLOAD_BITS = 8;
 
 wire [PAYLOAD_BITS-1:0]  uart_rx_data;
@@ -23,27 +24,14 @@ wire        uart_tx_en;
 
 wire rst;
 
-reg [31:0] counter;
+assign rst = sw_0;
 
-reg [7:0] data;
+blinky blinky_ (
+  .clk(clk),
+  .rst(rst),
+  .led(led_0)
+);
 
-assign rst = !sw_0;
-
-always @(posedge clk) begin
-  if(counter == CLK_HZ)
-    counter <= 0;
-  else
-    counter <= counter + 1;
-  
-  if(uart_rx_valid)
-    data <= uart_rx_data;
-end
-
-// Loopback
-assign uart_tx_en = counter == 0;
-assign uart_tx_data = data;
-
-/*
 puzzle puzzle_ (
   .rst (rst),
   .clk (clk),
@@ -53,7 +41,6 @@ puzzle puzzle_ (
   .input_data (uart_rx_data),
   .input_valid (uart_rx_valid)
 );
-*/
 
 // ------------------------------------------------------------------------- 
 
@@ -82,7 +69,7 @@ uart_tx #(
 .CLK_HZ  (CLK_HZ  )
 ) i_uart_tx(
 .clk          (clk          ),
-.resetn       (sw_0         ),
+.resetn       (!rst         ),
 .uart_txd     (uart_txd     ),
 .uart_tx_en   (uart_tx_en   ),
 .uart_tx_busy (uart_tx_busy ),
