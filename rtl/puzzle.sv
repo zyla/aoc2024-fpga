@@ -32,7 +32,7 @@ module puzzle (
               n_to_send <= 8;
               state <= SENDING;
             end else if (input_data >= "0" && input_data <= "9") begin
-              value <= (value << 3) + (value << 1) + input_data - "0";
+              value <= (value << 3) + (value << 1) + 32'(input_data) - "0";
             end else begin
               // TODO: print error
             end
