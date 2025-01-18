@@ -14,8 +14,9 @@ module puzzle
     output logic [7:0] output_data   // The data to be sent
 );
 
-  enum { INITIAL, SENDING, NEWLINE } state;
+  enum { PARSING_1, PARSING_2, SENDING, NEWLINE } state;
 
+  reg [W-1:0] value_1 = 0;
   reg [W-1:0] value = 0;
   reg [3:0] n_to_send = 0;
 
@@ -23,11 +24,13 @@ module puzzle
 
   reg [W_BCD-1:0] value_bcd = 0;
 
+  logic [W-1:0] computation_result = value_1 + value;
+
   wire [W_BCD-1:0] value_bcd_computed;
   bin2bcd #(
     .N(W)
   ) bin2bcd_ (
-    .binary_in(value),
+    .binary_in(computation_result),
     .bcd_out(value_bcd_computed)
   );
 
@@ -35,16 +38,24 @@ module puzzle
     if (rst) begin
       value <= 0;
       n_to_send <= 0;
-      state <= INITIAL;
+      state <= PARSING_1;
     end else begin
       case(state)
-        INITIAL: begin
+        PARSING_1, PARSING_2: begin
           if (input_valid) begin
             if(input_data == "\n") begin
-              n_to_send <= 4'(W_BCD/4);
               value <= 0;
-              value_bcd <= value_bcd_computed;
-              state <= SENDING;
+              case(state)
+                PARSING_1: begin
+                  value_1 <= value;
+                  state <= PARSING_2;
+                end
+                PARSING_2: begin
+                  value_bcd <= value_bcd_computed;
+                  n_to_send <= 4'(W_BCD/4);
+                  state <= SENDING;
+                end
+              endcase
             end else if (input_data >= "0" && input_data <= "9") begin
               value <= (value << 3) + (value << 1) + 32'(input_data) - "0";
             end else begin
@@ -64,7 +75,7 @@ module puzzle
         end
         NEWLINE: begin
           if(!output_busy) begin
-            state <= INITIAL;
+            state <= PARSING_1;
           end
         end
       endcase
@@ -73,7 +84,7 @@ module puzzle
   
   always_comb begin
     case(state)
-      INITIAL: begin
+      PARSING_1, PARSING_2: begin
         output_en = 0;
       end
       SENDING: begin
