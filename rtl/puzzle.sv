@@ -1,6 +1,8 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
-module puzzle (
+module puzzle
+#( parameter                W = 32)  // value register width
+(
     input clk,
     input rst,
 
@@ -14,10 +16,20 @@ module puzzle (
 
   enum { INITIAL, SENDING } state;
 
-  reg [31:0] value = 0;
+  reg [W-1:0] value = 0;
   reg [3:0] n_to_send = 0;
 
-  wire [3:0] nibble_to_send = value[31:28];
+  localparam W_BCD = ((W + 3) / 4) * 4;
+
+  reg [W_BCD-1:0] value_bcd = 0;
+
+  wire [W_BCD-1:0] value_bcd_computed;
+  bin2bcd #(
+    .N(W)
+  ) bin2bcd_ (
+    .binary_in(value),
+    .bcd_out(value_bcd_computed)
+  );
 
   always @(posedge clk) begin
     if (rst) begin
@@ -29,7 +41,8 @@ module puzzle (
         INITIAL: begin
           if (input_valid) begin
             if(input_data == "\n") begin
-              n_to_send <= 8;
+              n_to_send <= 4'(W_BCD/4);
+              value_bcd <= value_bcd_computed;
               state <= SENDING;
             end else if (input_data >= "0" && input_data <= "9") begin
               value <= (value << 3) + (value << 1) + 32'(input_data) - "0";
@@ -42,7 +55,7 @@ module puzzle (
           if(!output_busy) begin
             if(n_to_send > 0) begin
               n_to_send <= n_to_send - 1;
-              value <= value << 4;
+              value_bcd <= value_bcd << 4;
             end else begin
               state <= INITIAL;
             end
@@ -59,10 +72,7 @@ module puzzle (
       end
       SENDING: begin
         output_en = n_to_send > 0;
-        output_data =
-          nibble_to_send < 10 ?
-            8'(nibble_to_send) + "0" :
-            (8'(nibble_to_send) - 10 + "a");
+        output_data = 8'(value_bcd[W_BCD-1:W_BCD-4]) + "0";
       end
     endcase
   end
