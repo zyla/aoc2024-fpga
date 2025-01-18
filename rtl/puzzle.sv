@@ -16,39 +16,50 @@ module puzzle (
   typedef enum { INITIAL, SEND, SENDING } State;
   State state = INITIAL;
 
-  State next_state;
-  logic [7:0] next_n_to_send;
-
   always @(posedge clk) begin
     if (rst) begin
       n_to_send <= 0;
       state <= INITIAL;
     end else begin
-      state <= next_state;
-      n_to_send <= next_n_to_send;
-    end
-  end
-
-  always_comb begin
     case(state)
       INITIAL: begin
         if (input_valid && input_data >= "0" && input_data <= "9") begin
-          next_state = SEND;
-          next_n_to_send = input_data - "0";
+          state <= SEND;
+          n_to_send <= input_data - "0";
         end else begin
-          next_state = INITIAL;
+          state <= INITIAL;
         end
+      end
+      SEND: begin
+        if(!output_busy) begin
+          if(n_to_send > 0) begin
+            state <= SENDING;
+            n_to_send <= n_to_send - 1;
+          end else begin
+            state <= INITIAL;
+          end
+        end
+      end
+      SENDING: begin
+        if(!output_busy) begin
+          state <= SEND;
+        end
+      end
+    endcase
+    end
+  end
+  
+  always_comb begin
+    case(state)
+      INITIAL: begin
         output_en = 0;
       end
       SEND: begin
         if(!output_busy) begin
           if(n_to_send > 0) begin
-            next_state = SENDING;
-            output_data = "A";
+            output_data = "B";
             output_en = 1;
-            next_n_to_send = n_to_send - 1;
           end else begin
-            next_state = INITIAL;
             output_en = 0;
           end
         end else begin
@@ -57,9 +68,6 @@ module puzzle (
       end
       SENDING: begin
         output_en = 0;
-        if(!output_busy) begin
-          next_state = SEND;
-        end
       end
     endcase
   end
