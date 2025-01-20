@@ -6,6 +6,8 @@ Solving [Advent of Code 2024](https://adventofcode.com/2024) tasks in Verilog on
 
 Because fun!
 
+Or, as someone once said, "AoC tasks are too easy if you don't impose additional constraints".
+
 ## Architecture
 
 The task communicates with the host computer via USB-UART, as if it was stdin/stdout.
